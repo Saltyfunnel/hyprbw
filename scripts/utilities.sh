@@ -72,12 +72,11 @@ run_command "yay -S --sudoloop --noconfirm starship" "Install Starship - Prompt"
 
 # Copy starship.toml if it exists
 STARSHIP_SRC="$REPO_DIR/configs/starship/starship.toml"
-STARSHIP_DEST="$CONFIG_DIR/starship/starship.toml"
+STARSHIP_DEST="$CONFIG_DIR/starship.toml"
 
 if [ -f "$STARSHIP_SRC" ]; then
-    run_command "mkdir -p \"$CONFIG_DIR/starship\"" "Create Starship config directory" "no" "no"
-    run_command "cp \"$STARSHIP_SRC\" \"$STARSHIP_DEST\"" "Copy Starship config" "yes" "no"
-    run_command "chown -R $SUDO_USER:$SUDO_USER \"$CONFIG_DIR/starship\"" "Fix ownership for Starship config" "no" "yes"
+    run_command "cp \"$STARSHIP_SRC\" \"$STARSHIP_DEST\"" "Copy Starship config to $CONFIG_DIR" "yes" "no"
+    run_command "chown $SUDO_USER:$SUDO_USER \"$STARSHIP_DEST\"" "Fix ownership for starship.toml" "no" "yes"
 else
     print_warning "Starship config file not found: $STARSHIP_SRC"
 fi
