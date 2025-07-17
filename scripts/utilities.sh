@@ -90,7 +90,7 @@ add_starship_to_shell() {
     local starship_line='eval "$(starship init '"$shell_name"')"' 
 
     if [ -f "$shell_rc_path" ]; then
-        if ! grep -q "$starship_line" "$shell_rc_path"; then
+        if ! grep -qF "$starship_line" "$shell_rc_path"; then
             echo -e "\n$starship_line" >> "$shell_rc_path"
             run_command "chown $SUDO_USER:$SUDO_USER \"$shell_rc_path\"" "Fix ownership for $shell_rc" "no" "yes"
             print_info "Added Starship init to $shell_rc"
@@ -106,16 +106,15 @@ add_starship_to_shell ".zshrc" "zsh"
 # Install Papirus icon theme (run as root)
 run_command "pacman -S --noconfirm papirus-icon-theme" "Install Papirus Icon Theme (Stable)" "yes" "yes"
 
-# Install papirus-folders and apply grey folder color on Papirus-Dark
-if ! command -v papirus-folders &> /dev/null; then
-    TMP_DIR=$(mktemp -d)
-    run_command "git clone https://github.com/PapirusDevelopmentTeam/papirus-folders.git $TMP_DIR" "Clone papirus-folders repo" "yes" "no"
-    run_command "sudo $TMP_DIR/install.sh" "Install papirus-folders" "yes" "yes"
-    run_command "rm -rf $TMP_DIR" "Cleanup papirus-folders temp repo" "no" "yes"
-fi
+# Install papirus-folders from GitHub with clean temp directory
+TMP_DIR=$(mktemp -d)
+run_command "rm -rf \"$TMP_DIR\"" "Clean temporary directory before cloning papirus-folders" "no" "no"
+run_command "git clone https://github.com/PapirusDevelopmentTeam/papirus-folders.git \"$TMP_DIR\"" "Clone papirus-folders repo" "yes" "no"
+run_command "sudo bash \"$TMP_DIR/install.sh\"" "Install papirus-folders icons" "yes" "yes"
+run_command "rm -rf \"$TMP_DIR\"" "Clean up papirus-folders temp directory" "no" "yes"
 
-# Apply grey folder color on Papirus-Dark theme (run as user)
-run_command "papirus-folders -C grey --theme Papirus-Dark" "Apply grey folder color on Papirus-Dark theme" "yes" "no"
+# Apply Papirus folder color fix (dark theme)
+run_command "papirus-folders -C dark --theme Papirus-Dark" "Set Papirus folder color to dark theme" "yes" "no"
 
 # Define GTK config paths
 GTK3_CONFIG_DIR="$USER_HOME/.config/gtk-3.0"
@@ -124,7 +123,7 @@ GTK4_CONFIG_DIR="$USER_HOME/.config/gtk-4.0"
 # Ensure config directories exist (run as user)
 run_command "mkdir -p \"$GTK3_CONFIG_DIR\" \"$GTK4_CONFIG_DIR\"" "Ensure GTK config dirs exist" "no" "no"
 
-# Apply GTK theme and icon settings (run as user)
+# Apply theme settings (run as user)
 GTK_SETTINGS_CONTENT="[Settings]
 gtk-theme-name=FlatColor
 gtk-icon-theme-name=Papirus
@@ -134,8 +133,6 @@ echo "$GTK_SETTINGS_CONTENT" | tee "$GTK3_CONFIG_DIR/settings.ini" "$GTK4_CONFIG
 
 # Fix ownership so user owns the files (run as root)
 run_command "chown -R $SUDO_USER:$SUDO_USER \"$GTK3_CONFIG_DIR\" \"$GTK4_CONFIG_DIR\"" "Fix ownership for GTK settings" "no" "yes"
-
-# ------------------------------------------------------------------------
 
 # SDDM Monochrome Theme (KDE repository)
 MONO_SDDM_REPO="https://github.com/pwyde/monochrome-kde.git"
