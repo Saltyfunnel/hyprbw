@@ -34,40 +34,17 @@ copy_as_user() {
     run_command "chown -R $SUDO_USER:$SUDO_USER \"$dest\"" "Fix ownership for $dest" "no" "yes"
 }
 
-# Waybar
-run_command "pacman -S --noconfirm waybar" "Install Waybar - Status Bar" "yes"
+# Install utilities
+run_command "pacman -S --noconfirm waybar cliphist papirus-icon-theme" "Install core utilities" "yes"
+run_command "yay -S --sudoloop --noconfirm tofi swww hyprpicker hyprlock grimblast hypridle starship" "Install yay utilities" "yes" "no"
+
+# Copy config folders
 copy_as_user "$REPO_DIR/configs/waybar" "$CONFIG_DIR/waybar"
-
-# Tofi
-run_command "yay -S --sudoloop --noconfirm tofi" "Install Tofi - Application Launcher" "yes" "no"
 copy_as_user "$REPO_DIR/configs/tofi" "$CONFIG_DIR/tofi"
-
-# Cliphist
-run_command "pacman -S --noconfirm cliphist" "Install Cliphist - Clipboard Manager" "yes"
-
-# SWWW
-run_command "yay -S --sudoloop --noconfirm swww" "Install SWWW for wallpaper management" "yes" "no"
+copy_as_user "$REPO_DIR/configs/hypr" "$CONFIG_DIR/hypr"
 copy_as_user "$ASSETS_SRC/backgrounds" "$ASSETS_DEST/backgrounds"
 
-# Hyprpicker
-run_command "yay -S --sudoloop --noconfirm hyprpicker" "Install Hyprpicker - Color Picker" "yes" "no"
-
-# Hyprlock
-run_command "yay -S --sudoloop --noconfirm hyprlock" "Install Hyprlock - Screen Locker" "yes" "no"
-copy_as_user "$REPO_DIR/configs/hypr" "$CONFIG_DIR/hypr"
-
-# Grimblast
-run_command "yay -S --sudoloop --noconfirm grimblast" "Install Grimblast - Screenshot tool" "yes" "no"
-
-# Hypridle
-run_command "yay -S --sudoloop --noconfirm hypridle" "Install Hypridle for idle management" "yes" "no"
-
-# ------------------------------------------------------------------------
-
-# Starship Prompt
-run_command "yay -S --sudoloop --noconfirm starship" "Install Starship - Prompt" "yes" "no"
-
-# Copy starship.toml
+# Copy Starship config
 STARSHIP_SRC="$REPO_DIR/configs/starship/starship.toml"
 STARSHIP_DEST="$CONFIG_DIR/starship.toml"
 
@@ -78,6 +55,7 @@ else
     print_warning "Starship config file not found: $STARSHIP_SRC"
 fi
 
+# Add Starship to shell configs
 add_starship_to_shell() {
     local shell_rc="$1"
     local shell_name="$2"
@@ -96,12 +74,7 @@ add_starship_to_shell() {
 add_starship_to_shell ".bashrc" "bash"
 add_starship_to_shell ".zshrc" "zsh"
 
-# ------------------------------------------------------------------------
-
-# Install Papirus icon theme
-run_command "pacman -S --noconfirm papirus-icon-theme" "Install Papirus Icon Theme" "yes" "yes"
-
-# Set GTK icon theme
+# GTK Theme Settings
 GTK3_CONFIG_DIR="$USER_HOME/.config/gtk-3.0"
 GTK4_CONFIG_DIR="$USER_HOME/.config/gtk-4.0"
 
@@ -113,29 +86,48 @@ gtk-icon-theme-name=Papirus-Dark
 gtk-font-name=JetBrainsMono 10"
 
 echo "$GTK_SETTINGS_CONTENT" | tee "$GTK3_CONFIG_DIR/settings.ini" "$GTK4_CONFIG_DIR/settings.ini" > /dev/null
-
 run_command "chown -R $SUDO_USER:$SUDO_USER \"$GTK3_CONFIG_DIR\" \"$GTK4_CONFIG_DIR\"" "Fix ownership for GTK settings" "no" "yes"
 
-# GTK2 fallback icon theme
-echo 'gtk-icon-theme-name="Papirus-Dark"' > "$USER_HOME/.gtkrc-2.0"
-run_command "chown $SUDO_USER:$SUDO_USER \"$USER_HOME/.gtkrc-2.0\"" "Fix ownership for .gtkrc-2.0" "no" "yes"
+# -----------------------------------------------------------------------------
+# Papirus Folder Color & Icon Fix
+# -----------------------------------------------------------------------------
 
-# Set icon theme via gsettings inside user DBus session
-USER_UID=$(id -u "$SUDO_USER")
-run_command "sudo -u $SUDO_USER DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$USER_UID/bus gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'" "Set GNOME icon theme with gsettings" "no" "no"
+# Ensure DBus is available
+if ! pidof dbus-daemon > /dev/null; then
+    run_command "dbus-daemon --session --fork" "Start DBus session"
+fi
 
-# ------------------------------------------------------------------------
+# Install papirus-folders if not present
+PAPIRUS_FOLDER_TOOL="/usr/local/bin/papirus-folders"
+if [ ! -f "$PAPIRUS_FOLDER_TOOL" ]; then
+    TEMP_DIR=$(mktemp -d)
+    run_command "git clone --depth=1 https://github.com/PapirusDevelopmentTeam/papirus-folders.git \"$TEMP_DIR\"" "Clone papirus-folders repo"
+    run_command "install -Dm755 \"$TEMP_DIR/papirus-folders\" \"$PAPIRUS_FOLDER_TOOL\"" "Install papirus-folders tool"
+    run_command "rm -rf \"$TEMP_DIR\"" "Cleanup papirus-folders temp dir"
+fi
 
-# SDDM Monochrome Theme
+# Set folder color to grey in Papirus-Dark
+run_command "papirus-folders -C grey --theme Papirus-Dark" "Apply 'grey' Papirus folder color"
+
+# Force icon theme (important for Thunar/GTK apps)
+run_command "gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'" "Set GTK icon theme via gsettings"
+
+# -----------------------------------------------------------------------------
+# SDDM Theme
+# -----------------------------------------------------------------------------
+
 MONO_SDDM_REPO="https://github.com/pwyde/monochrome-kde.git"
 MONO_SDDM_TEMP="/tmp/monochrome-kde"
 MONO_THEME_NAME="monochrome"
 
-run_command "git clone --depth=1 \"$MONO_SDDM_REPO\" \"$MONO_SDDM_TEMP\"" "Clone monochrome KDE repo" "yes" "no"
-run_command "sudo cp -r \"$MONO_SDDM_TEMP/sddm/themes/$MONO_THEME_NAME\" \"/usr/share/sddm/themes/$MONO_THEME_NAME\"" "Copy SDDM theme" "yes" "no"
-run_command "sudo chown -R root:root \"/usr/share/sddm/themes/$MONO_THEME_NAME\"" "Set ownership for theme" "no" "yes"
-run_command "sudo mkdir -p /etc/sddm.conf.d" "Ensure SDDM config directory" "no" "no"
-run_command "sudo bash -c 'echo -e \"[Theme]\\nCurrent=$MONO_THEME_NAME\" > /etc/sddm.conf.d/10-theme.conf'" "Set theme in SDDM config" "yes" "yes"
-run_command "rm -rf \"$MONO_SDDM_TEMP\"" "Cleanup cloned mono repo" "no" "yes"
+run_command "git clone --depth=1 \"$MONO_SDDM_REPO\" \"$MONO_SDDM_TEMP\"" "Clone monochrome KDE repo"
+run_command "cp -r \"$MONO_SDDM_TEMP/sddm/themes/$MONO_THEME_NAME\" \"/usr/share/sddm/themes/$MONO_THEME_NAME\"" "Copy monochrome SDDM theme"
+run_command "chown -R root:root \"/usr/share/sddm/themes/$MONO_THEME_NAME\"" "Set ownership for monochrome theme"
+
+run_command "mkdir -p /etc/sddm.conf.d" "Ensure SDDM config directory exists"
+run_command "bash -c 'echo -e \"[Theme]\\nCurrent=$MONO_THEME_NAME\" > /etc/sddm.conf.d/10-theme.conf'" "Set monochrome theme in SDDM config"
+
+run_command "rm -rf \"$MONO_SDDM_TEMP\"" "Cleanup cloned mono repo"
 
 echo "------------------------------------------------------------------------"
+echo "✅ Utilities install complete! Papirus folder color and icon theme should be applied."
