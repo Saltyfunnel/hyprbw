@@ -39,13 +39,13 @@ run_command "yay -S --sudoloop --noconfirm hyprpicker" "Install Hyprpicker - Col
 ### Hyprlock
 run_command "yay -S --sudoloop --noconfirm hyprlock" "Install Hyprlock - Screen Locker (Must)" "yes" "no"
 run_command "mkdir -p /home/$SUDO_USER/.config/hyprbw" "Ensure Hyprbw config dir exists" "no" "no"
-run_command "cp -r /home/$SUDO_USER/hyprbw/configs/hyprbw/hyprlock.conf /home/$SUDO_USER/.config/hyprbw/" "Copy Hyprlock config" "yes" "no"
+run_command "cp -r /home/$SUDO_USER/hyprbw/configs/hypr/hyprlock.conf /home/$SUDO_USER/.config/hypr/" "Copy Hyprlock config" "yes" "no"
 
 ### Grimblast
 run_command "yay -S --sudoloop --noconfirm grimblast" "Install Grimblast - Screenshot tool" "yes" "no"
 
 ### Hypridle
 run_command "yay -S --sudoloop --noconfirm hypridle" "Install Hypridle for idle management (Must)" "yes" "no"
-run_command "cp -r /home/$SUDO_USER/hyprbw/configs/hyprbw/hypridle.conf /home/$SUDO_USER/.config/hyprbw/" "Copy Hypridle config" "yes" "no"
+run_command "cp -r /home/$SUDO_USER/hyprbw/configs/hypr/hypridle.conf /home/$SUDO_USER/.config/hypr/" "Copy Hypridle config" "yes" "no"
 
 echo "------------------------------------------------------------------------"
