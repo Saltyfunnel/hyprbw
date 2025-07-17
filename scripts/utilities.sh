@@ -103,28 +103,32 @@ add_starship_to_shell ".zshrc" "zsh"
 
 # ------------------------------------------------------------------------
 
-# Icon Theme: Papirus + Grey folders for GTK apps (Thunar)
+# Papirus Icon Theme Setup with Grey Folders
 
-# Install Papirus and folder color tool
-run_command "yay -S --sudoloop --noconfirm papirus-icon-theme papirus-folders" "Install Papirus icon theme and folder switcher" "yes" "no"
+# Install Papirus icon theme
+run_command "yay -S --sudoloop --noconfirm papirus-icon-theme" "Install Papirus icon theme" "yes" "no"
 
-# Set folder color to grey
-run_command "papirus-folders -C grey --theme Papirus" "Set Papirus folders to grey" "no" "yes"
+# Clone and apply grey folder variant manually
+PAPIRUS_TEMP="/tmp/papirus-grey"
+run_command "git clone --depth=1 https://github.com/PapirusDevelopmentTeam/papirus-folders.git \"$PAPIRUS_TEMP\"" "Clone papirus-folders tool" "yes" "no"
+run_command "cd \"$PAPIRUS_TEMP\" && sudo ./papirus-folders -C grey --theme Papirus" "Set Papirus folders to grey" "no" "yes"
 
-# Ensure GTK config folders exist
+# Set GTK icon theme to Papirus
 GTK3_CONF="$CONFIG_DIR/gtk-3.0/settings.ini"
 GTK4_CONF="$CONFIG_DIR/gtk-4.0/settings.ini"
 run_command "mkdir -p \"$(dirname $GTK3_CONF)\" \"$(dirname $GTK4_CONF)\"" "Ensure GTK config folders exist" "no" "no"
-
-# Set Papirus as the GTK icon theme
 run_command "bash -c 'echo -e \"[Settings]\\ngtk-icon-theme-name=Papirus\" > \"$GTK3_CONF\"'" "Set GTK3 icon theme to Papirus" "yes" "yes"
 run_command "bash -c 'echo -e \"[Settings]\\ngtk-icon-theme-name=Papirus\" > \"$GTK4_CONF\"'" "Set GTK4 icon theme to Papirus" "yes" "yes"
 
-# Fix ownership of GTK config
+# Fix ownership
 run_command "chown -R $SUDO_USER:$SUDO_USER \"$CONFIG_DIR/gtk-3.0\" \"$CONFIG_DIR/gtk-4.0\"" "Fix ownership for GTK settings" "no" "yes"
 
-# Clear icon and thumbnail cache to apply changes
+# Cleanup
+run_command "rm -rf \"$PAPIRUS_TEMP\"" "Remove temporary papirus folder repo" "no" "yes"
+
+# Clear icon and thumbnail cache
 run_command "rm -rf \"$USER_HOME/.cache/icon-cache.kcache\" \"$USER_HOME/.cache/thumbnails\"" "Clear GTK icon and thumbnail cache" "no" "yes"
+
 
 
 # ------------------------------------------------------------------------
