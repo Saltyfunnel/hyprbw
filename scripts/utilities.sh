@@ -12,14 +12,12 @@ if ! command -v yay &> /dev/null; then
     exit 1
 fi
 
-# Define user's home paths
 USER_HOME="/home/$SUDO_USER"
 CONFIG_DIR="$USER_HOME/.config"
 REPO_DIR="$USER_HOME/hyprbw"
 ASSETS_SRC="$REPO_DIR/assets"
 ASSETS_DEST="$CONFIG_DIR/assets"
 
-# Function to safely copy directory as the user
 copy_as_user() {
     local src="$1"
     local dest="$2"
@@ -34,39 +32,31 @@ copy_as_user() {
     run_command "chown -R $SUDO_USER:$SUDO_USER \"$dest\"" "Fix ownership for $dest" "no" "yes"
 }
 
-# Waybar
+# ---------------------------------------------
+# Waybar & Utilities
+# ---------------------------------------------
+
 run_command "pacman -S --noconfirm waybar" "Install Waybar - Status Bar" "yes"
 copy_as_user "$REPO_DIR/configs/waybar" "$CONFIG_DIR/waybar"
 
-# Tofi
 run_command "yay -S --sudoloop --noconfirm tofi" "Install Tofi - Application Launcher" "yes" "no"
 copy_as_user "$REPO_DIR/configs/tofi" "$CONFIG_DIR/tofi"
 
-# Cliphist
 run_command "pacman -S --noconfirm cliphist" "Install Cliphist - Clipboard Manager" "yes"
-
-# SWWW
 run_command "yay -S --sudoloop --noconfirm swww" "Install SWWW for wallpaper management" "yes" "no"
-
-# Backgrounds
 copy_as_user "$ASSETS_SRC/backgrounds" "$ASSETS_DEST/backgrounds"
 
-# Hyprpicker
 run_command "yay -S --sudoloop --noconfirm hyprpicker" "Install Hyprpicker - Color Picker" "yes" "no"
-
-# Hyprlock
 run_command "yay -S --sudoloop --noconfirm hyprlock" "Install Hyprlock - Screen Locker" "yes" "no"
 copy_as_user "$REPO_DIR/configs/hypr" "$CONFIG_DIR/hypr"
 
-# Grimblast
 run_command "yay -S --sudoloop --noconfirm grimblast" "Install Grimblast - Screenshot tool" "yes" "no"
-
-# Hypridle
 run_command "yay -S --sudoloop --noconfirm hypridle" "Install Hypridle for idle management" "yes" "no"
 
-# ------------------------------------------------------------------------
-
+# ---------------------------------------------
 # Starship Prompt
+# ---------------------------------------------
+
 run_command "yay -S --sudoloop --noconfirm starship" "Install Starship - Prompt" "yes" "no"
 
 STARSHIP_SRC="$REPO_DIR/configs/starship/starship.toml"
@@ -79,12 +69,12 @@ else
     print_warning "Starship config file not found: $STARSHIP_SRC"
 fi
 
-# Add Starship init to shell configs
 add_starship_to_shell() {
     local shell_rc="$1"
     local shell_name="$2"
+
     local shell_rc_path="$USER_HOME/$shell_rc"
-    local starship_line='eval "$(starship init '"$shell_name"')"'
+    local starship_line='eval "$(starship init '"$shell_name"')"' 
 
     if [ -f "$shell_rc_path" ]; then
         if ! grep -q "$starship_line" "$shell_rc_path"; then
@@ -98,12 +88,12 @@ add_starship_to_shell() {
 add_starship_to_shell ".bashrc" "bash"
 add_starship_to_shell ".zshrc" "zsh"
 
-# ------------------------------------------------------------------------
+# ---------------------------------------------
+# GTK Theme & Icon Setup
+# ---------------------------------------------
 
-# Install Papirus Icon Theme
 run_command "pacman -S --noconfirm papirus-icon-theme" "Install Papirus Icon Theme (Stable)" "yes" "yes"
 
-# GTK settings
 GTK3_CONFIG_DIR="$USER_HOME/.config/gtk-3.0"
 GTK4_CONFIG_DIR="$USER_HOME/.config/gtk-4.0"
 
@@ -117,27 +107,27 @@ gtk-font-name=JetBrainsMono 10"
 echo "$GTK_SETTINGS_CONTENT" | tee "$GTK3_CONFIG_DIR/settings.ini" "$GTK4_CONFIG_DIR/settings.ini" > /dev/null
 run_command "chown -R $SUDO_USER:$SUDO_USER \"$GTK3_CONFIG_DIR\" \"$GTK4_CONFIG_DIR\"" "Fix ownership for GTK settings" "no" "yes"
 
-# ------------------------------------------------------------------------
-# Thunar theming via papirus-folders
+# ---------------------------------------------
+# Apply Papirus-Folders Accent Color
+# ---------------------------------------------
+
 TMP_DIR=$(mktemp -d -t papirus-folders-XXXXXX)
 
+# Just in case the folder exists already — wipe and recreate
 if [ -d "$TMP_DIR" ]; then
-    run_command "git clone https://github.com/PapirusDevelopmentTeam/papirus-folders.git \"$TMP_DIR\"" "Clone papirus-folders repo" "yes" "no"
-
-    if [ -f "$TMP_DIR/install.sh" ]; then
-        run_command "sudo bash \"$TMP_DIR/install.sh\"" "Run papirus-folders install script" "yes" "yes"
-        run_command "papirus-folders -C grey --theme Papirus-Dark" "Apply grey folder icons for Papirus-Dark" "yes" "no"
-    else
-        print_error "Install script missing in papirus-folders repo."
-    fi
-
-    run_command "rm -rf \"$TMP_DIR\"" "Clean up temporary folder after install" "no" "yes"
-else
-    print_error "Failed to create temporary directory: $TMP_DIR"
+    rm -rf "$TMP_DIR"
+    mkdir -p "$TMP_DIR"
 fi
 
-# ------------------------------------------------------------------------
-# SDDM Monochrome Theme
+run_command "git clone https://github.com/PapirusDevelopmentTeam/papirus-folders.git \"$TMP_DIR\"" "Clone papirus-folders repo" "yes" "no"
+run_command "cd \"$TMP_DIR\" && sudo ./install.sh" "Install papirus-folders utility" "yes" "yes"
+run_command "papirus-folders -C grey --theme Papirus-Dark" "Apply grey folder color to Papirus-Dark" "yes" "no"
+run_command "rm -rf \"$TMP_DIR\"" "Cleanup temp papirus-folders dir" "no" "yes"
+
+# ---------------------------------------------
+# SDDM Theme Setup
+# ---------------------------------------------
+
 MONO_SDDM_REPO="https://github.com/pwyde/monochrome-kde.git"
 MONO_SDDM_TEMP="/tmp/monochrome-kde"
 MONO_THEME_NAME="monochrome"
