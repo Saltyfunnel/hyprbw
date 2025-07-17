@@ -38,7 +38,7 @@ run_command "yay -S --sudoloop --noconfirm hyprpicker" "Install Hyprpicker - Col
 
 ### Hyprlock
 run_command "yay -S --sudoloop --noconfirm hyprlock" "Install Hyprlock - Screen Locker (Must)" "yes" "no"
-run_command "mkdir -p /home/$SUDO_USER/.config/hyprbw" "Ensure Hypr config dir exists" "no" "no"
+run_command "mkdir -p /home/$SUDO_USER/.config/hyprbw" "Ensure Hyprbw config dir exists" "no" "no"
 run_command "cp -r /home/$SUDO_USER/hyprbw/configs/hyprbw/hyprlock.conf /home/$SUDO_USER/.config/hyprbw/" "Copy Hyprlock config" "yes" "no"
 
 ### Grimblast
