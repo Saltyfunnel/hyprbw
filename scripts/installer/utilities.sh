@@ -1,5 +1,15 @@
 #!/bin/bash
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(realpath "$SCRIPT_DIR/..")"  # assumes scripts are in repo_root/scripts/
+USER_HOME="/home/$SUDO_USER"
+
+source "$SCRIPT_DIR/helper.sh"
+
+check_root
+check_os
+
+
 # Get the directory of the current script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
