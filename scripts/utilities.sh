@@ -1,73 +1,60 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(realpath "$SCRIPT_DIR/..")"
-USER_HOME="/home/$SUDO_USER"
-
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$SCRIPT_DIR/helper.sh"
 
-check_root
-check_os
+log_message "Installation started for utilities section"
+print_info "\nStarting utilities setup..."
 
-print_header "Starting utilities setup..."
-
-if ! command -v yay &>/dev/null; then
-  print_error "Yay is not installed. Please run prerequisites.sh first."
-  exit 1
+# Ensure yay is installed
+if ! command -v yay &> /dev/null; then
+    print_error "YAY is not installed. Please ensure prerequisites.sh installs yay successfully."
+    exit 1
 fi
 
-# Packages to install with pacman or yay
-PACMAN_PKGS=(waybar cliphist)
-AUR_PKGS=(tofi swww hyprpicker hyprlock grimblast hypridle)
+# Define user's home paths
+USER_HOME="/home/$SUDO_USER"
+CONFIG_DIR="$USER_HOME/.config"
+REPO_DIR="$USER_HOME/hyprbw"
+ASSETS_SRC="$REPO_DIR/assets"
+ASSETS_DEST="$CONFIG_DIR/assets"
 
-# Install pacman packages
-for pkg in "${PACMAN_PKGS[@]}"; do
-  run_command "pacman -S --noconfirm $pkg" "Install $pkg" "yes"
-done
+# Waybar
+run_command "pacman -S --noconfirm waybar" "Install Waybar - Status Bar" "yes"
+run_command "cp -r $REPO_DIR/configs/waybar $CONFIG_DIR/" "Copy Waybar config" "yes" "no"
 
-# Install AUR packages with yay
-for pkg in "${AUR_PKGS[@]}"; do
-  run_command "yay -S --sudoloop --noconfirm $pkg" "Install $pkg" "yes" "no"
-done
+# Tofi
+run_command "yay -S --sudoloop --noconfirm tofi" "Install Tofi - Application Launcher" "yes" "no"
+run_command "cp -r $REPO_DIR/configs/tofi $CONFIG_DIR/" "Copy Tofi config(s)" "yes" "no"
 
-# Copy configs with ownership fix
-copy_and_chown() {
-  local src="$1"
-  local dst="$2"
-  if [[ -e "$src" ]]; then
-    run_command "mkdir -p $dst" "Create directory $dst" "no" "no"
-    run_command "cp -r $src/* $dst/" "Copy configs from $src to $dst" "yes" "no"
-    run_command "chown -R $SUDO_USER:$SUDO_USER $dst" "Fix ownership for $dst" "no" "yes"
-  else
-    print_warning "Source directory $src does not exist. Skipping."
-  fi
-}
+# Cliphist
+run_command "pacman -S --noconfirm cliphist" "Install Cliphist - Clipboard Manager" "yes"
 
-copy_and_chown "$REPO_ROOT/configs/waybar" "$USER_HOME/.config/waybar"
-copy_and_chown "$REPO_ROOT/configs/tofi" "$USER_HOME/.config/tofi"
+# SWWW
+run_command "yay -S --sudoloop --noconfirm swww" "Install SWWW for wallpaper management" "yes" "no"
 
-# Backgrounds
-BG_SRC="$REPO_ROOT/assets/backgrounds"
-BG_DST="$USER_HOME/.config/assets/backgrounds"
-if [[ -d "$BG_SRC" ]]; then
-  run_command "mkdir -p $BG_DST" "Create backgrounds directory" "no" "no"
-  run_command "cp -r $BG_SRC/* $BG_DST/" "Copy background images" "yes" "no"
-  run_command "chown -R $SUDO_USER:$SUDO_USER $BG_DST" "Fix ownership for backgrounds" "no" "yes"
+# Backgrounds (ensure target dir & copy as user)
+run_command "mkdir -p $ASSETS_DEST/backgrounds" "Create backgrounds directory" "no" "no"
+if [ -d "$ASSETS_SRC/backgrounds" ]; then
+    run_command "cp -r $ASSETS_SRC/backgrounds/* $ASSETS_DEST/backgrounds/" "Copy background images" "yes" "no"
 else
-  print_warning "Backgrounds directory missing: $BG_SRC"
+    print_warning "Backgrounds folder not found at $ASSETS_SRC/backgrounds"
+    log_message "Backgrounds not copied: missing folder."
 fi
 
-# Hyprlock and Hypridle configs
-run_command "mkdir -p $USER_HOME/.config/hypr" "Create hypr config directory" "no" "no"
+# Hyprpicker
+run_command "yay -S --sudoloop --noconfirm hyprpicker" "Install Hyprpicker - Color Picker" "yes" "no"
 
-if [[ -f "$REPO_ROOT/configs/hypr/hyprlock.conf" ]]; then
-  run_command "cp $REPO_ROOT/configs/hypr/hyprlock.conf $USER_HOME/.config/hypr/" "Copy hyprlock.conf" "yes" "no"
-  run_command "chown $SUDO_USER:$SUDO_USER $USER_HOME/.config/hypr/hyprlock.conf" "Fix ownership hyprlock.conf" "no" "yes"
-fi
+# Hyprlock
+run_command "yay -S --sudoloop --noconfirm hyprlock" "Install Hyprlock - Screen Locker" "yes" "no"
+run_command "mkdir -p $CONFIG_DIR/hypr" "Ensure Hypr config dir exists" "no" "no"
+run_command "cp -r $REPO_DIR/configs/hypr/hyprlock.conf $CONFIG_DIR/hypr/" "Copy Hyprlock config" "yes" "no"
 
-if [[ -f "$REPO_ROOT/configs/hypr/hypridle.conf" ]]; then
-  run_command "cp $REPO_ROOT/configs/hypr/hypridle.conf $USER_HOME/.config/hypr/" "Copy hypridle.conf" "yes" "no"
-  run_command "chown $SUDO_USER:$SUDO_USER $USER_HOME/.config/hypr/hypridle.conf" "Fix ownership hypridle.conf" "no" "yes"
-fi
+# Grimblast
+run_command "yay -S --sudoloop --noconfirm grimblast" "Install Grimblast - Screenshot tool" "yes" "no"
+
+# Hypridle
+run_command "yay -S --sudoloop --noconfirm hypridle" "Install Hypridle for idle management" "yes" "no"
+run_command "cp -r $REPO_DIR/configs/hypr/hypridle.conf $CONFIG_DIR/hypr/" "Copy Hypridle config" "yes" "no"
 
 echo "------------------------------------------------------------------------"
