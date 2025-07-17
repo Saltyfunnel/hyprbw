@@ -29,7 +29,6 @@ copy_as_user() {
         return 1
     fi
 
-    # Make sure destination exists
     run_command "mkdir -p \"$dest\"" "Create destination directory $dest" "no" "no"
     run_command "cp -r \"$src\"/* \"$dest\"" "Copy from $src to $dest" "yes" "no"
     run_command "chown -R $SUDO_USER:$SUDO_USER \"$dest\"" "Fix ownership for $dest" "no" "yes"
@@ -70,7 +69,6 @@ run_command "yay -S --sudoloop --noconfirm hypridle" "Install Hypridle for idle 
 # Starship Prompt
 run_command "yay -S --sudoloop --noconfirm starship" "Install Starship - Prompt" "yes" "no"
 
-# Copy starship.toml if it exists
 STARSHIP_SRC="$REPO_DIR/configs/starship/starship.toml"
 STARSHIP_DEST="$CONFIG_DIR/starship.toml"
 
@@ -81,13 +79,12 @@ else
     print_warning "Starship config file not found: $STARSHIP_SRC"
 fi
 
-# Add Starship init line to user's shell config (bash and zsh)
+# Add Starship init to shell configs
 add_starship_to_shell() {
     local shell_rc="$1"
     local shell_name="$2"
-
     local shell_rc_path="$USER_HOME/$shell_rc"
-    local starship_line='eval "$(starship init '"$shell_name"')"' 
+    local starship_line='eval "$(starship init '"$shell_name"')"'
 
     if [ -f "$shell_rc_path" ]; then
         if ! grep -q "$starship_line" "$shell_rc_path"; then
@@ -103,59 +100,53 @@ add_starship_to_shell ".zshrc" "zsh"
 
 # ------------------------------------------------------------------------
 
-# Install Papirus icon theme (run as root)
+# Install Papirus Icon Theme
 run_command "pacman -S --noconfirm papirus-icon-theme" "Install Papirus Icon Theme (Stable)" "yes" "yes"
 
-# Install papirus-folders and apply grey folder color on Papirus-Dark
-if ! command -v papirus-folders &> /dev/null; then
-    TMP_DIR=$(mktemp -d)
-    run_command "git clone https://github.com/PapirusDevelopmentTeam/papirus-folders.git $TMP_DIR" "Clone papirus-folders repo" "yes" "no"
-    run_command "sudo $TMP_DIR/install.sh" "Install papirus-folders" "yes" "yes"
-    run_command "rm -rf $TMP_DIR" "Cleanup papirus-folders temp repo" "no" "yes"
-fi
-
-# Apply grey folder color on Papirus-Dark theme (run as user)
-run_command "papirus-folders -C grey --theme Papirus-Dark" "Apply grey folder color on Papirus-Dark theme" "yes" "no"
-
-# Define GTK config paths
+# GTK settings
 GTK3_CONFIG_DIR="$USER_HOME/.config/gtk-3.0"
 GTK4_CONFIG_DIR="$USER_HOME/.config/gtk-4.0"
 
-# Ensure config directories exist (run as user)
 run_command "mkdir -p \"$GTK3_CONFIG_DIR\" \"$GTK4_CONFIG_DIR\"" "Ensure GTK config dirs exist" "no" "no"
 
-# Apply GTK theme and icon settings (run as user)
 GTK_SETTINGS_CONTENT="[Settings]
 gtk-theme-name=FlatColor
 gtk-icon-theme-name=Papirus
 gtk-font-name=JetBrainsMono 10"
 
 echo "$GTK_SETTINGS_CONTENT" | tee "$GTK3_CONFIG_DIR/settings.ini" "$GTK4_CONFIG_DIR/settings.ini" > /dev/null
-
-# Fix ownership so user owns the files (run as root)
 run_command "chown -R $SUDO_USER:$SUDO_USER \"$GTK3_CONFIG_DIR\" \"$GTK4_CONFIG_DIR\"" "Fix ownership for GTK settings" "no" "yes"
 
 # ------------------------------------------------------------------------
+# Thunar theming via papirus-folders
+TMP_DIR=$(mktemp -d -t papirus-folders-XXXXXX)
 
-# SDDM Monochrome Theme (KDE repository)
+if [ -d "$TMP_DIR" ]; then
+    run_command "git clone https://github.com/PapirusDevelopmentTeam/papirus-folders.git \"$TMP_DIR\"" "Clone papirus-folders repo" "yes" "no"
+
+    if [ -f "$TMP_DIR/install.sh" ]; then
+        run_command "sudo bash \"$TMP_DIR/install.sh\"" "Run papirus-folders install script" "yes" "yes"
+        run_command "papirus-folders -C grey --theme Papirus-Dark" "Apply grey folder icons for Papirus-Dark" "yes" "no"
+    else
+        print_error "Install script missing in papirus-folders repo."
+    fi
+
+    run_command "rm -rf \"$TMP_DIR\"" "Clean up temporary folder after install" "no" "yes"
+else
+    print_error "Failed to create temporary directory: $TMP_DIR"
+fi
+
+# ------------------------------------------------------------------------
+# SDDM Monochrome Theme
 MONO_SDDM_REPO="https://github.com/pwyde/monochrome-kde.git"
 MONO_SDDM_TEMP="/tmp/monochrome-kde"
-MONO_THEME_NAME="monochrome"  # folder inside sddm/themes
+MONO_THEME_NAME="monochrome"
 
-# Clone the repository (no root needed)
 run_command "git clone --depth=1 \"$MONO_SDDM_REPO\" \"$MONO_SDDM_TEMP\"" "Clone monochrome KDE repo" "yes" "no"
-
-# Copy SDDM theme folder (needs root)
 run_command "sudo cp -r \"$MONO_SDDM_TEMP/sddm/themes/$MONO_THEME_NAME\" \"/usr/share/sddm/themes/$MONO_THEME_NAME\"" "Copy monochrome SDDM theme" "yes" "no"
-
-# Fix ownership (needs root)
 run_command "sudo chown -R root:root \"/usr/share/sddm/themes/$MONO_THEME_NAME\"" "Set ownership for monochrome theme" "no" "yes"
-
-# Apply the theme in SDDM (needs root)
 run_command "sudo mkdir -p /etc/sddm.conf.d" "Ensure SDDM config directory exists" "no" "no"
 run_command "sudo bash -c 'echo -e \"[Theme]\\nCurrent=$MONO_THEME_NAME\" > /etc/sddm.conf.d/10-theme.conf'" "Set monochrome theme in SDDM config" "yes" "yes"
-
-# Cleanup (no root needed)
 run_command "rm -rf \"$MONO_SDDM_TEMP\"" "Cleanup cloned mono repo" "no" "yes"
 
 echo "------------------------------------------------------------------------"
