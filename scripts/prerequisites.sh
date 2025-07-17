@@ -31,6 +31,7 @@ PACKAGES=(
   sddm kitty nano tar gnome-disk-utility code mpv
   thunar thunar-archive-plugin thunar-volman tumbler ffmpegthumbnailer file-roller
   gvfs gvfs-mtp gvfs-gphoto2 gvfs-smb
+  polkit polkit-gnome
 )
 
 run_command "pacman -S --noconfirm ${PACKAGES[*]}" "Install system packages" "yes"
