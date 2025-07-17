@@ -34,14 +34,14 @@ mkdir -p "$KVANTUM_DIR"
 echo "FlatColor" > "$KVANTUM_DIR/kvantum.kvconfig"
 
 # Copy Kitty config with monochrome config (you should provide it at this path)
-run_command "cp -r /home/$SUDO_USER/hypr/configs/kitty /home/$SUDO_USER/.config/" "Copy monochrome Kitty config" "yes" "no"
+run_command "cp -r /home/$SUDO_USER/hyprbw/configs/kitty /home/$SUDO_USER/.config/" "Copy monochrome Kitty config" "yes" "no"
 
 # === COPY USER ASSETS (BGs, Lockscreens, etc.) ===
 
 USER_ASSETS_DIR="/home/$SUDO_USER/.config/assets"
 mkdir -p "$USER_ASSETS_DIR"
 
-ASSETS_SRC="/home/$SUDO_USER/hypr/assets"
+ASSETS_SRC="/home/$SUDO_USER/hyprbw/assets"
 if [ -d "$ASSETS_SRC" ]; then
     run_command "cp -r $ASSETS_SRC/* $USER_ASSETS_DIR/" "Copy user theming assets" "no"
 else
