@@ -31,11 +31,7 @@ copy_as_user() {
 
     # Make sure destination exists
     run_command "mkdir -p \"$dest\"" "Create destination directory $dest" "no" "no"
-
-    # Copy content as the user
     run_command "cp -r \"$src\"/* \"$dest\"" "Copy from $src to $dest" "yes" "no"
-
-    # Fix ownership recursively to the user
     run_command "chown -R $SUDO_USER:$SUDO_USER \"$dest\"" "Fix ownership for $dest" "no" "yes"
 }
 
@@ -53,7 +49,7 @@ run_command "pacman -S --noconfirm cliphist" "Install Cliphist - Clipboard Manag
 # SWWW
 run_command "yay -S --sudoloop --noconfirm swww" "Install SWWW for wallpaper management" "yes" "no"
 
-# Backgrounds (copy assets/backgrounds)
+# Backgrounds
 copy_as_user "$ASSETS_SRC/backgrounds" "$ASSETS_DEST/backgrounds"
 
 # Hyprpicker
@@ -68,6 +64,42 @@ run_command "yay -S --sudoloop --noconfirm grimblast" "Install Grimblast - Scree
 
 # Hypridle
 run_command "yay -S --sudoloop --noconfirm hypridle" "Install Hypridle for idle management" "yes" "no"
-# hypridle config copied above as part of hypr folder
+
+# ------------------------------------------------------------------------
+
+# Starship Prompt
+run_command "yay -S --sudoloop --noconfirm starship" "Install Starship - Prompt" "yes" "no"
+
+# Copy starship.toml if it exists
+STARSHIP_SRC="$REPO_DIR/configs/starship/starship.toml"
+STARSHIP_DEST="$CONFIG_DIR/starship/starship.toml"
+
+if [ -f "$STARSHIP_SRC" ]; then
+    run_command "mkdir -p \"$CONFIG_DIR/starship\"" "Create Starship config directory" "no" "no"
+    run_command "cp \"$STARSHIP_SRC\" \"$STARSHIP_DEST\"" "Copy Starship config" "yes" "no"
+    run_command "chown -R $SUDO_USER:$SUDO_USER \"$CONFIG_DIR/starship\"" "Fix ownership for Starship config" "no" "yes"
+else
+    print_warning "Starship config file not found: $STARSHIP_SRC"
+fi
+
+# Add Starship init line to user's shell config (bash and zsh)
+add_starship_to_shell() {
+    local shell_rc="$1"
+    local shell_name="$2"
+
+    local shell_rc_path="$USER_HOME/$shell_rc"
+    local starship_line='eval "$(starship init '"$shell_name"')"'
+
+    if [ -f "$shell_rc_path" ]; then
+        if ! grep -q "$starship_line" "$shell_rc_path"; then
+            echo -e "\n$starship_line" >> "$shell_rc_path"
+            run_command "chown $SUDO_USER:$SUDO_USER \"$shell_rc_path\"" "Fix ownership for $shell_rc" "no" "yes"
+            print_info "Added Starship init to $shell_rc"
+        fi
+    fi
+}
+
+add_starship_to_shell ".bashrc" "bash"
+add_starship_to_shell ".zshrc" "zsh"
 
 echo "------------------------------------------------------------------------"
