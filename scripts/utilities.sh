@@ -87,7 +87,7 @@ add_starship_to_shell() {
     local shell_name="$2"
 
     local shell_rc_path="$USER_HOME/$shell_rc"
-    local starship_line='eval "$(starship init '"$shell_name"')"'
+    local starship_line='eval "$(starship init '"$shell_name"')"' 
 
     if [ -f "$shell_rc_path" ]; then
         if ! grep -q "$starship_line" "$shell_rc_path"; then
@@ -101,26 +101,27 @@ add_starship_to_shell() {
 add_starship_to_shell ".bashrc" "bash"
 add_starship_to_shell ".zshrc" "zsh"
 
+# ------------------------------------------------------------------------
+
 # SDDM Monochrome Theme (KDE repository)
 MONO_SDDM_REPO="https://github.com/pwyde/monochrome-kde.git"
 MONO_SDDM_TEMP="/tmp/monochrome-kde"
 MONO_THEME_NAME="monochrome"  # folder inside sddm/themes
 
-# Clone the repository
+# Clone the repository (no root needed)
 run_command "git clone --depth=1 \"$MONO_SDDM_REPO\" \"$MONO_SDDM_TEMP\"" "Clone monochrome KDE repo" "yes" "no"
 
-# Copy SDDM theme folder
-run_command "cp -r \"$MONO_SDDM_TEMP/sddm/themes/$MONO_THEME_NAME\" \"/usr/share/sddm/themes/$MONO_THEME_NAME\"" "Copy monochrome SDDM theme" "yes" "no"
+# Copy SDDM theme folder (needs root)
+run_command "sudo cp -r \"$MONO_SDDM_TEMP/sddm/themes/$MONO_THEME_NAME\" \"/usr/share/sddm/themes/$MONO_THEME_NAME\"" "Copy monochrome SDDM theme" "yes" "no"
 
-# Fix ownership
-run_command "chown -R root:root \"/usr/share/sddm/themes/$MONO_THEME_NAME\"" "Set ownership for monochrome theme" "no" "yes"
+# Fix ownership (needs root)
+run_command "sudo chown -R root:root \"/usr/share/sddm/themes/$MONO_THEME_NAME\"" "Set ownership for monochrome theme" "no" "yes"
 
-# Apply the theme in SDDM
-run_command "mkdir -p /etc/sddm.conf.d" "Ensure SDDM config directory exists" "no" "no"
-run_command "bash -c 'echo -e \"[Theme]\\nCurrent=$MONO_THEME_NAME\" > /etc/sddm.conf.d/10-theme.conf'" "Set monochrome theme in SDDM config" "yes" "yes"
+# Apply the theme in SDDM (needs root)
+run_command "sudo mkdir -p /etc/sddm.conf.d" "Ensure SDDM config directory exists" "no" "no"
+run_command "sudo bash -c 'echo -e \"[Theme]\\nCurrent=$MONO_THEME_NAME\" > /etc/sddm.conf.d/10-theme.conf'" "Set monochrome theme in SDDM config" "yes" "yes"
 
-# Cleanup
+# Cleanup (no root needed)
 run_command "rm -rf \"$MONO_SDDM_TEMP\"" "Cleanup cloned mono repo" "no" "yes"
-
 
 echo "------------------------------------------------------------------------"
