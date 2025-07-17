@@ -103,33 +103,19 @@ add_starship_to_shell ".zshrc" "zsh"
 
 # ------------------------------------------------------------------------
 
-# Papirus Icon Theme Setup with Grey Folders
-
 # Install Papirus icon theme
-run_command "yay -S --sudoloop --noconfirm papirus-icon-theme" "Install Papirus icon theme" "yes" "no"
+run_command "yay -S --noconfirm papirus-icon-theme" "Install Papirus Icon Theme" "yes" "no"
 
-# Clone and apply grey folder variant manually
-PAPIRUS_TEMP="/tmp/papirus-grey"
-run_command "git clone --depth=1 https://github.com/PapirusDevelopmentTeam/papirus-folders.git \"$PAPIRUS_TEMP\"" "Clone papirus-folders tool" "yes" "no"
-run_command "cd \"$PAPIRUS_TEMP\" && sudo ./papirus-folders -C grey --theme Papirus" "Set Papirus folders to grey" "no" "yes"
+# Rebuild icon cache
+run_command "gtk-update-icon-cache -f -t /usr/share/icons/Papirus" "Update GTK icon cache" "no" "yes"
 
-# Set GTK icon theme to Papirus
-GTK3_CONF="$CONFIG_DIR/gtk-3.0/settings.ini"
-GTK4_CONF="$CONFIG_DIR/gtk-4.0/settings.ini"
-run_command "mkdir -p \"$(dirname $GTK3_CONF)\" \"$(dirname $GTK4_CONF)\"" "Ensure GTK config folders exist" "no" "no"
-run_command "bash -c 'echo -e \"[Settings]\\ngtk-icon-theme-name=Papirus\" > \"$GTK3_CONF\"'" "Set GTK3 icon theme to Papirus" "yes" "yes"
-run_command "bash -c 'echo -e \"[Settings]\\ngtk-icon-theme-name=Papirus\" > \"$GTK4_CONF\"'" "Set GTK4 icon theme to Papirus" "yes" "yes"
+# Set GTK icon theme via config files
+GTK3_CONFIG_DIR="$USER_HOME/.config/gtk-3.0"
+GTK4_CONFIG_DIR="$USER_HOME/.config/gtk-4.0"
 
-# Fix ownership
-run_command "chown -R $SUDO_USER:$SUDO_USER \"$CONFIG_DIR/gtk-3.0\" \"$CONFIG_DIR/gtk-4.0\"" "Fix ownership for GTK settings" "no" "yes"
-
-# Cleanup
-run_command "rm -rf \"$PAPIRUS_TEMP\"" "Remove temporary papirus folder repo" "no" "yes"
-
-# Clear icon and thumbnail cache
-run_command "rm -rf \"$USER_HOME/.cache/icon-cache.kcache\" \"$USER_HOME/.cache/thumbnails\"" "Clear GTK icon and thumbnail cache" "no" "yes"
-
-
+run_command "mkdir -p \"$GTK3_CONFIG_DIR\" \"$GTK4_CONFIG_DIR\"" "Ensure GTK config dirs exist" "no" "no"
+echo -e "[Settings]\ngtk-icon-theme-name=Papirus" | tee "$GTK3_CONFIG_DIR/settings.ini" "$GTK4_CONFIG_DIR/settings.ini" > /dev/null
+run_command "chown -R $SUDO_USER:$SUDO_USER \"$GTK3_CONFIG_DIR\" \"$GTK4_CONFIG_DIR\"" "Fix ownership for GTK settings" "no" "yes"
 
 # ------------------------------------------------------------------------
 
