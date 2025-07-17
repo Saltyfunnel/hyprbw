@@ -126,6 +126,10 @@ echo "$GTK_SETTINGS_CONTENT" | tee "$GTK3_CONFIG_DIR/settings.ini" "$GTK4_CONFIG
 # Fix ownership so user owns the files (run as root)
 run_command "chown -R $SUDO_USER:$SUDO_USER \"$GTK3_CONFIG_DIR\" \"$GTK4_CONFIG_DIR\"" "Fix ownership for GTK settings" "no" "yes"
 
+# Set GTK/GNOME icon theme to Papirus-Dark
+run_command "sudo -u $SUDO_USER gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'" "Set icon theme to Papirus-Dark" "no" "no"
+
+
 # ------------------------------------------------------------------------
 
 # SDDM Monochrome Theme (KDE repository)
