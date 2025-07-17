@@ -35,6 +35,8 @@ PACKAGES=(
 )
 
 run_command "pacman -S --noconfirm ${PACKAGES[*]}" "Install system packages" "yes"
+run_command "systemctl enable --now polkit.service" "Enable and start polkit daemon" "yes"
+run_command "pacman -S --noconfirm ${PACKAGES[*]}" "Install system packages" "yes"
 run_command "systemctl enable sddm.service" "Enable SDDM display manager" "yes"
 run_command "yay -S --sudoloop --noconfirm firefox" "Install Firefox browser" "yes" "no"
 
