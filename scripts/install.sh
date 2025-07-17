@@ -14,7 +14,7 @@ print_bold_blue "\n🚀 Starting Full Hyprland Setup"
 echo "-------------------------------------"
 
 # Run each phase script that exists and is executable
-for phase in prerequisites utilities gpu theming; do
+for phase in prerequisites utilities gpu; do
   PHASE_SCRIPT="$SCRIPT_DIR/$phase.sh"
   if [[ -x "$PHASE_SCRIPT" ]]; then
     print_header "Executing $phase.sh"
