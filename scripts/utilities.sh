@@ -35,42 +35,39 @@ copy_as_user() {
     run_command "chown -R $SUDO_USER:$SUDO_USER \"$dest\"" "Fix ownership for $dest" "no" "yes"
 }
 
-# Waybar
+# Install Waybar
 run_command "pacman -S --noconfirm waybar" "Install Waybar - Status Bar" "yes"
 copy_as_user "$REPO_DIR/configs/waybar" "$CONFIG_DIR/waybar"
 
-# Tofi
+# Install Tofi
 run_command "yay -S --sudoloop --noconfirm tofi" "Install Tofi - Application Launcher" "yes" "no"
 copy_as_user "$REPO_DIR/configs/tofi" "$CONFIG_DIR/tofi"
 
-# Cliphist
+# Install Cliphist
 run_command "pacman -S --noconfirm cliphist" "Install Cliphist - Clipboard Manager" "yes"
 
-# SWWW
+# Install SWWW
 run_command "yay -S --sudoloop --noconfirm swww" "Install SWWW for wallpaper management" "yes" "no"
 
-# Backgrounds
+# Copy Backgrounds
 copy_as_user "$ASSETS_SRC/backgrounds" "$ASSETS_DEST/backgrounds"
 
-# Hyprpicker
+# Install Hyprpicker
 run_command "yay -S --sudoloop --noconfirm hyprpicker" "Install Hyprpicker - Color Picker" "yes" "no"
 
-# Hyprlock
+# Install Hyprlock and copy configs
 run_command "yay -S --sudoloop --noconfirm hyprlock" "Install Hyprlock - Screen Locker" "yes" "no"
 copy_as_user "$REPO_DIR/configs/hypr" "$CONFIG_DIR/hypr"
 
-# Grimblast
+# Install Grimblast
 run_command "yay -S --sudoloop --noconfirm grimblast" "Install Grimblast - Screenshot tool" "yes" "no"
 
-# Hypridle
+# Install Hypridle
 run_command "yay -S --sudoloop --noconfirm hypridle" "Install Hypridle for idle management" "yes" "no"
 
-# ------------------------------------------------------------------------
-
-# Starship Prompt
+# Starship Prompt installation and config
 run_command "yay -S --sudoloop --noconfirm starship" "Install Starship - Prompt" "yes" "no"
 
-# Copy starship.toml if it exists
 STARSHIP_SRC="$REPO_DIR/configs/starship/starship.toml"
 STARSHIP_DEST="$CONFIG_DIR/starship.toml"
 
@@ -81,16 +78,14 @@ else
     print_warning "Starship config file not found: $STARSHIP_SRC"
 fi
 
-# Add Starship init line to user's shell config (bash and zsh)
 add_starship_to_shell() {
     local shell_rc="$1"
     local shell_name="$2"
-
     local shell_rc_path="$USER_HOME/$shell_rc"
-    local starship_line='eval "$(starship init '"$shell_name"')"' 
+    local starship_line='eval "$(starship init '"$shell_name"')"'
 
     if [ -f "$shell_rc_path" ]; then
-        if ! grep -qF "$starship_line" "$shell_rc_path"; then
+        if ! grep -q "$starship_line" "$shell_rc_path"; then
             echo -e "\n$starship_line" >> "$shell_rc_path"
             run_command "chown $SUDO_USER:$SUDO_USER \"$shell_rc_path\"" "Fix ownership for $shell_rc" "no" "yes"
             print_info "Added Starship init to $shell_rc"
@@ -106,15 +101,12 @@ add_starship_to_shell ".zshrc" "zsh"
 # Install Papirus icon theme (run as root)
 run_command "pacman -S --noconfirm papirus-icon-theme" "Install Papirus Icon Theme (Stable)" "yes" "yes"
 
-# Install papirus-folders from GitHub with clean temp directory
-TMP_DIR=$(mktemp -d)
-run_command "rm -rf \"$TMP_DIR\"" "Clean temporary directory before cloning papirus-folders" "no" "no"
-run_command "git clone https://github.com/PapirusDevelopmentTeam/papirus-folders.git \"$TMP_DIR\"" "Clone papirus-folders repo" "yes" "no"
-run_command "sudo bash \"$TMP_DIR/install.sh\"" "Install papirus-folders icons" "yes" "yes"
-run_command "rm -rf \"$TMP_DIR\"" "Clean up papirus-folders temp directory" "no" "yes"
-
-# Apply Papirus folder color fix (dark theme)
-run_command "papirus-folders -C dark --theme Papirus-Dark" "Set Papirus folder color to dark theme" "yes" "no"
+# Install papirus-folders from GitHub with clean temp directory (fixed permission handling)
+TMP_DIR=$(sudo mktemp -d)
+sudo rm -rf "$TMP_DIR"
+sudo git clone https://github.com/PapirusDevelopmentTeam/papirus-folders.git "$TMP_DIR"
+sudo bash "$TMP_DIR/install.sh"
+sudo rm -rf "$TMP_DIR"
 
 # Define GTK config paths
 GTK3_CONFIG_DIR="$USER_HOME/.config/gtk-3.0"
@@ -133,6 +125,8 @@ echo "$GTK_SETTINGS_CONTENT" | tee "$GTK3_CONFIG_DIR/settings.ini" "$GTK4_CONFIG
 
 # Fix ownership so user owns the files (run as root)
 run_command "chown -R $SUDO_USER:$SUDO_USER \"$GTK3_CONFIG_DIR\" \"$GTK4_CONFIG_DIR\"" "Fix ownership for GTK settings" "no" "yes"
+
+# ------------------------------------------------------------------------
 
 # SDDM Monochrome Theme (KDE repository)
 MONO_SDDM_REPO="https://github.com/pwyde/monochrome-kde.git"
