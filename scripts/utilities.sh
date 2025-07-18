@@ -37,8 +37,8 @@ copy_as_user "$REPO_DIR/configs/waybar" "$CONFIG_DIR/waybar"
 run_command "yay -S --sudoloop --noconfirm tofi" "Install Tofi - Application Launcher" "yes" "no"
 copy_as_user "$REPO_DIR/configs/tofi" "$CONFIG_DIR/tofi"
 
-# fastfetch (install latest dev build for logo.source support)
-run_command "yay -S --sudoloop --noconfirm fastfetch-git" "Install fastfetch-git" "yes" "no"
+# fastfetch
+run_command "yay -S --sudoloop --noconfirm fastfetch" "Install fastfetch" "yes" "no"
 copy_as_user "$REPO_DIR/configs/fastfetch" "$CONFIG_DIR/fastfetch"
 
 add_fastfetch_to_shell() {
