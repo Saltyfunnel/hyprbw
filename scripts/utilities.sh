@@ -37,8 +37,8 @@ copy_as_user "$REPO_DIR/configs/waybar" "$CONFIG_DIR/waybar"
 run_command "yay -S --sudoloop --noconfirm tofi" "Install Tofi - Application Launcher" "yes" "no"
 copy_as_user "$REPO_DIR/configs/tofi" "$CONFIG_DIR/tofi"
 
-# fastfetch
-run_command "yay -S --sudoloop --noconfirm fastfetch" "Install fastfetch" "yes" "no"
+# fastfetch (install latest dev build for logo.source support)
+run_command "yay -S --sudoloop --noconfirm fastfetch-git" "Install fastfetch-git" "yes" "no"
 copy_as_user "$REPO_DIR/configs/fastfetch" "$CONFIG_DIR/fastfetch"
 
 add_fastfetch_to_shell() {
@@ -97,7 +97,7 @@ add_starship_to_shell() {
     local shell_rc="$1"
     local shell_name="$2"
     local shell_rc_path="$USER_HOME/$shell_rc"
-    local starship_line='eval "$(starship init '"$shell_name"')"'
+    local starship_line='eval "$(starship init '"$shell_name"')"' 
 
     if [ -f "$shell_rc_path" ]; then
         if ! grep -qF "$starship_line" "$shell_rc_path"; then
