@@ -37,6 +37,27 @@ copy_as_user "$REPO_DIR/configs/waybar" "$CONFIG_DIR/waybar"
 run_command "yay -S --sudoloop --noconfirm tofi" "Install Tofi - Application Launcher" "yes" "no"
 copy_as_user "$REPO_DIR/configs/tofi" "$CONFIG_DIR/tofi"
 
+# fastfetch
+run_command "yay -S --sudoloop --noconfirm fastfetch" "Install fastfetch" "yes" "no"
+copy_as_user "$REPO_DIR/configs/fastfetch" "$CONFIG_DIR/fastfetch"
+
+add_fastfetch_to_shell() {
+    local shell_rc="$1"
+    local shell_rc_path="$USER_HOME/$shell_rc"
+    local fastfetch_line='fastfetch'
+
+    if [ -f "$shell_rc_path" ]; then
+        if ! grep -qF "$fastfetch_line" "$shell_rc_path"; then
+            echo -e "\n# Run fastfetch on terminal start\n$fastfetch_line" >> "$shell_rc_path"
+            run_command "chown $USER_NAME:$USER_NAME \"$shell_rc_path\"" "Fix ownership for $shell_rc" "no" "yes"
+            print_info "Added fastfetch run to $shell_rc"
+        fi
+    fi
+}
+
+add_fastfetch_to_shell ".bashrc"
+add_fastfetch_to_shell ".zshrc"
+
 # Cliphist
 run_command "pacman -S --noconfirm cliphist" "Install Cliphist - Clipboard Manager" "yes"
 
@@ -79,7 +100,7 @@ add_starship_to_shell() {
     local starship_line='eval "$(starship init '"$shell_name"')"'
 
     if [ -f "$shell_rc_path" ]; then
-        if ! grep -q "$starship_line" "$shell_rc_path"; then
+        if ! grep -qF "$starship_line" "$shell_rc_path"; then
             echo -e "\n$starship_line" >> "$shell_rc_path"
             run_command "chown $USER_NAME:$USER_NAME \"$shell_rc_path\"" "Fix ownership for $shell_rc" "no" "yes"
             print_info "Added Starship init to $shell_rc"
