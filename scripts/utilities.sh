@@ -44,7 +44,7 @@ copy_as_user "$REPO_DIR/configs/fastfetch" "$CONFIG_DIR/fastfetch"
 add_fastfetch_to_shell() {
     local shell_rc="$1"
     local shell_rc_path="$USER_HOME/$shell_rc"
-    local fastfetch_line='fastfetch'
+    local fastfetch_line='fastfetch --kitty-direct /home/gerard/.config/fastfetch/archkitty.png'
 
     if [ -f "$shell_rc_path" ]; then
         if ! grep -qF "$fastfetch_line" "$shell_rc_path"; then
@@ -54,6 +54,7 @@ add_fastfetch_to_shell() {
         fi
     fi
 }
+
 
 add_fastfetch_to_shell ".bashrc"
 add_fastfetch_to_shell ".zshrc"
