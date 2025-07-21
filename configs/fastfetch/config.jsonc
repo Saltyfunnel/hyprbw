@@ -1,0 +1,129 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+
+  "logo": {
+    "source": "~/.config/fastfetch/archkitty.png",
+    "type": "kitty",
+    "height": 14,
+    "padding": {
+      "top": 1,
+      "right": 2,
+      "bottom": 1,
+      "left": 2
+    }
+  },
+
+  "modules": [
+    "break",
+
+    {
+      "type": "title",
+      "keyWidth": 12,
+      "keyColor": "240",    // very dark grey
+      "valueColor": "254"   // near white
+    },
+
+    {
+      "type": "os",
+      "key": "OS: ",
+      "keyColor": "237",    // dark grey
+      "valueColor": "250"   // light grey
+    },
+    {
+      "type": "kernel",
+      "key": "Kernel: ",
+      "keyColor": "238",    // slightly lighter dark grey
+      "valueColor": "249"   // light grey
+    },
+    {
+      "type": "host",
+      "key": "Host: ",
+      "keyColor": "239",
+      "valueColor": "248"
+    },
+    {
+      "type": "uptime",
+      "key": "Uptime: ",
+      "keyColor": "240",
+      "valueColor": "247"
+    },
+    {
+      "type": "cpu",
+      "key": "CPU: ",
+      "keyColor": "241",
+      "valueColor": "246"
+    },
+    {
+      "type": "memory",
+      "key": "RAM: ",
+      "keyColor": "242",
+      "valueColor": "245"
+    },
+    {
+      "type": "disk",
+      "key": "Disk: ",
+      "folders": ["/"],
+      "keyColor": "243",
+      "valueColor": "244"
+    },
+    {
+      "type": "gpu",
+      "key": "GPU: ",
+      "keyColor": "244",
+      "valueColor": "243"
+    },
+
+    {
+      "type": "shell",
+      "key": "Shell: ",
+      "keyColor": "245",
+      "valueColor": "242"
+    },
+    {
+      "type": "terminal",
+      "key": "Terminal: ",
+      "keyColor": "246",
+      "valueColor": "241"
+    },
+    {
+      "type": "de",
+      "key": "DE: ",
+      "keyColor": "247",
+      "valueColor": "240"
+    },
+    {
+      "type": "wm",
+      "key": "WM: ",
+      "keyColor": "248",
+      "valueColor": "239"
+    },
+    {
+      "type": "theme",
+      "key": "Theme: ",
+      "keyColor": "249",
+      "valueColor": "238"
+    },
+    {
+      "type": "packages",
+      "format": "{} (pacman)",
+      "key": "Packages: ",
+      "keyColor": "250",
+      "valueColor": "237"
+    },
+    {
+      "type": "battery",
+      "key": "Battery: ",
+      "format": "{}%",
+      "keyColor": "251",
+      "valueColor": "236"
+    },
+    {
+      "type": "locale",
+      "key": "Locale: ",
+      "keyColor": "252",
+      "valueColor": "235"
+    },
+
+    "break"
+  ]
+}
