@@ -5,7 +5,7 @@
   "exclusive": true,
   "passthrough": false,
   "gtk-layer-shell": true,
-  "height": 0,
+  "height": 30,
 
   "modules-left": [
     "clock",
@@ -14,6 +14,7 @@
   "modules-center": ["hyprland/window"],
   "modules-right": [
     "custom/spotify",
+    "custom/updates",
     "memory",
     "cpu",
     "network",
@@ -22,14 +23,26 @@
     "pulseaudio",
     "pulseaudio#microphone",
     "custom/power"
-  ],
+      ],
 
- "custom/spotify": {
-  "exec": "STATUS=$(playerctl status --player=spotify 2>/dev/null); if [ \"$STATUS\" = \"Playing\" ]; then ICON=''; elif [ \"$STATUS\" = \"Paused\" ]; then ICON=''; else echo ''; exit 0; fi; INFO=$(playerctl metadata --player=spotify --format '{{ artist }} - {{ title }}'); echo \"$ICON $INFO\"",
-  "interval": 2,
-  "format": "{}",
-  "on-click": "playerctl play-pause --player=spotify"
+  "custom/spotify": {
+    "exec": "STATUS=$(playerctl status --player=spotify 2>/dev/null); if [ \"$STATUS\" = \"Playing\" ]; then ICON=''; elif [ \"$STATUS\" = \"Paused\" ]; then ICON=''; else echo ''; exit 0; fi; INFO=$(playerctl metadata --player=spotify --format '{{ artist }} - {{ title }}'); echo \"$ICON $INFO\"",
+    "interval": 2,
+    "format": "{}",
+    "on-click": "playerctl play-pause --player=spotify"
+  },
+
+"custom/updates": {
+  "exec": "~/.config/waybar/scripts/checkupdates.sh",
+  "interval": 600,
+  "format": "",
+  "tooltip": true,
+  "tooltip-format": "{} updates available",
+  "on-click": "kitty -e yay -Syu"
 }
+
+
+
 ,
 
   "hyprland/window": {
