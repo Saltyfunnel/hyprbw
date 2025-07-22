@@ -11,9 +11,11 @@
     "clock",
     "hyprland/workspaces"
   ],
-  "modules-center": ["hyprland/window"],
+  "modules-center": [
+    "hyprland/window"
+  ],
   "modules-right": [
-    "tray",
+    "spotify",
     "memory",
     "cpu",
     "network",
@@ -40,7 +42,7 @@
   },
 
   "clock": {
-    "format": "{:%A    %B-%d-%Y    %I:%M:%S %p}",
+    "format": "{:%A    %d-%B-%Y    %H:%M:%S}",
     "interval": 1,
     "rotate": 0,
     "tooltip-format": "<tt>{calendar}</tt>",
@@ -148,14 +150,21 @@
     "interval": 2
   },
 
- "custom/power": {
-  "format": "⏻",
-  "tooltip": true,
-  "tooltip-format": "Left: Shutdown\nMiddle: Logout\nRight: Reboot",
-  "on-click": "systemctl poweroff",
-  "on-click-middle": "swaymsg exit",
-  "on-click-right": "systemctl reboot",
-  "interval": 3600
-}
+  "custom/power": {
+    "format": "⏻",
+    "tooltip": true,
+    "tooltip-format": "Left: Shutdown\nMiddle: Logout\nRight: Reboot",
+    "on-click": "systemctl poweroff",
+    "on-click-middle": "swaymsg exit",
+    "on-click-right": "systemctl reboot",
+    "interval": 3600
+  },
 
+"spotify": {
+  "exec": "playerctl metadata --player=spotify --format '{{ artist }} - {{ title }}'",
+  "interval": 3,
+  "format": "󰏤 {output}",
+  "tooltip": false,
+  "on-click": "playerctl play-pause --player=spotify"
+}
 }
