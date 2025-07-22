@@ -163,13 +163,13 @@
     "interval": 2
   },
 
-  "custom/power": {
-    "format": "⏻",
-    "tooltip": true,
-    "tooltip-format": "Left: Shutdown\nMiddle: Logout\nRight: Reboot",
-    "on-click": "systemctl poweroff",
-    "on-click-middle": "swaymsg exit",
-    "on-click-right": "systemctl reboot",
-    "interval": 3600
-  }
+"custom/power": {
+  "format": "⏻",
+  "tooltip": true,
+  "tooltip-format": "Left: Shutdown\nMiddle: Logout\nRight: Reboot",
+  "on-click": "systemctl poweroff",
+  "on-click-middle": "hyprctl dispatch exit",
+  "on-click-right": "systemctl reboot",
+  "interval": 3600
+}
 }
