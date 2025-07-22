@@ -15,5 +15,5 @@ text-color = #f0f0f0
 prompt-text = " : "
 
 background-color = #1a1a1acc
-selection-color = #cccccc
+selection-color = #7d7c7cff
 selection-text-color = #000000
