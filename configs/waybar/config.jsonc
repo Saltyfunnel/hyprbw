@@ -24,12 +24,13 @@
     "custom/power"
   ],
 
-  "custom/spotify": {
-  "exec": "STATUS=$(playerctl status --player=spotify 2>/dev/null); if [ \"$STATUS\" = \"Playing\" ]; then ICON=''; elif [ \"$STATUS\" = \"Paused\" ]; then ICON=''; else ICON='󰝚'; fi; INFO=$(playerctl metadata --player=spotify --format '{{ artist }} - {{ title }}'); echo \"$ICON $INFO\"",
+ "custom/spotify": {
+  "exec": "STATUS=$(playerctl status --player=spotify 2>/dev/null); if [ \"$STATUS\" = \"Playing\" ]; then ICON=''; elif [ \"$STATUS\" = \"Paused\" ]; then ICON=''; else echo ''; exit 0; fi; INFO=$(playerctl metadata --player=spotify --format '{{ artist }} - {{ title }}'); echo \"$ICON $INFO\"",
   "interval": 2,
   "format": "{}",
   "on-click": "playerctl play-pause --player=spotify"
-},
+}
+,
 
   "hyprland/window": {
     "format": "󰣇 {}"
