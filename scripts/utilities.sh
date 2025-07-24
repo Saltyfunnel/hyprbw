@@ -161,21 +161,19 @@ setup_thunar_kitty_action() {
 
   mkdir -p "$uca_dir"
 
-  # The kitty action XML snippet
   local kitty_action_xml='
-<action>
-  <icon>utilities-terminal</icon>
-  <name>Open Kitty Here</name>
-  <command>kitty --directory=%f</command>
-  <description>Open kitty terminal in the current folder</description>
-  <patterns>*</patterns>
-  <directories_only>true</directories_only>
-  <startup_notify>true</startup_notify>
-</action>
-'
+  <action>
+    <icon>utilities-terminal</icon>
+    <name>Open Kitty Here</name>
+    <command>kitty --directory=%f</command>
+    <description>Open kitty terminal in the current folder</description>
+    <patterns>*</patterns>
+    <directories_only>true</directories_only>
+    <startup_notify>true</startup_notify>
+  </action>
+  '
 
   if [ ! -f "$uca_file" ]; then
-    # Create new uca.xml with root structure + kitty action
     cat > "$uca_file" << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <actions>
@@ -185,21 +183,13 @@ EOF
     chown "$USER_NAME":"$USER_NAME" "$uca_file"
     print_success "Created Thunar custom actions file with kitty terminal action."
   else
-    # Check if action already present
     if grep -q "<name>Open Kitty Here</name>" "$uca_file"; then
       print_info "Thunar custom action for kitty already present."
     else
-      # Insert kitty action before closing </actions> tag
-      sed -i '/<\/actions>/i \
-  <action>\
-    <icon>utilities-terminal</icon>\
-    <name>Open Kitty Here</name>\
-    <command>kitty --directory=%f</command>\
-    <description>Open kitty terminal in the current folder</description>\
-    <patterns>*</patterns>\
-    <directories_only>true</directories_only>\
-    <startup_notify>true</startup_notify>\
-  </action>' "$uca_file"
+      # Insert before closing </actions> tag cleanly:
+      sed -i "/<\/actions>/ i\\
+$kitty_action_xml
+" "$uca_file"
       chown "$USER_NAME":"$USER_NAME" "$uca_file"
       print_success "Added Thunar custom action to open kitty."
     fi
@@ -208,5 +198,4 @@ EOF
 
 setup_thunar_kitty_action
 
-echo "------------------------------------------------------------------------"
-print_info "All utilities installed successfully!"
+print_success "\nUtilities setup complete!"
