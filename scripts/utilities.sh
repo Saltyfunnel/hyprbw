@@ -29,150 +29,118 @@ copy_as_user() {
     run_command "chown -R $USER_NAME:$USER_NAME \"$dest\"" "Fix ownership for $dest" "no" "yes"
 }
 
-# Waybar
-run_command "pacman -S --noconfirm waybar" "Install Waybar - Status Bar" "yes"
+# Install core utilities
+run_command "pacman -S --noconfirm waybar" "Install Waybar" "yes"
 copy_as_user "$REPO_DIR/configs/waybar" "$CONFIG_DIR/waybar"
 
-# Tofi
-run_command "yay -S --sudoloop --noconfirm tofi" "Install Tofi - Application Launcher" "yes" "no"
+run_command "yay -S --sudoloop --noconfirm tofi fastfetch swww hyprpicker hyprlock grimblast hypridle starship" "Install AUR utilities" "yes" "no"
+
 copy_as_user "$REPO_DIR/configs/tofi" "$CONFIG_DIR/tofi"
-
-# fastfetch
-run_command "yay -S --sudoloop --noconfirm fastfetch" "Install fastfetch" "yes" "no"
 copy_as_user "$REPO_DIR/configs/fastfetch" "$CONFIG_DIR/fastfetch"
+copy_as_user "$REPO_DIR/configs/hypr" "$CONFIG_DIR/hypr"
 
+# Add fastfetch to shells
 add_fastfetch_to_shell() {
     local shell_rc="$1"
     local shell_rc_path="$USER_HOME/$shell_rc"
-    local fastfetch_line='fastfetch --kitty-direct /home/gerard/.config/fastfetch/archkitty.png'
+    local fastfetch_line='fastfetch --kitty-direct /home/'"$USER_NAME"'/.config/fastfetch/archkitty.png'
 
-    if [ -f "$shell_rc_path" ]; then
-        if ! grep -qF "$fastfetch_line" "$shell_rc_path"; then
-            echo -e "\n# Run fastfetch on terminal start\n$fastfetch_line" >> "$shell_rc_path"
-            run_command "chown $USER_NAME:$USER_NAME \"$shell_rc_path\"" "Fix ownership for $shell_rc" "no" "yes"
-            print_info "Added fastfetch run to $shell_rc"
-        fi
+    if [ -f "$shell_rc_path" ] && ! grep -qF "$fastfetch_line" "$shell_rc_path"; then
+        echo -e "\n# Run fastfetch on terminal start\n$fastfetch_line" >> "$shell_rc_path"
+        chown "$USER_NAME:$USER_NAME" "$shell_rc_path"
     fi
 }
 
 add_fastfetch_to_shell ".bashrc"
 add_fastfetch_to_shell ".zshrc"
 
-# Cliphist
-run_command "pacman -S --noconfirm cliphist" "Install Cliphist - Clipboard Manager" "yes"
+run_command "pacman -S --noconfirm cliphist" "Install Cliphist" "yes"
 
-# SWWW
-run_command "yay -S --sudoloop --noconfirm swww" "Install SWWW for wallpaper management" "yes" "no"
-
-# Backgrounds
 copy_as_user "$ASSETS_SRC/backgrounds" "$ASSETS_DEST/backgrounds"
 
-# Hyprpicker
-run_command "yay -S --sudoloop --noconfirm hyprpicker" "Install Hyprpicker - Color Picker" "yes" "no"
-
-# Hyprlock
-run_command "yay -S --sudoloop --noconfirm hyprlock" "Install Hyprlock - Screen Locker" "yes" "no"
-copy_as_user "$REPO_DIR/configs/hypr" "$CONFIG_DIR/hypr"
-
-# Grimblast
-run_command "yay -S --sudoloop --noconfirm grimblast" "Install Grimblast - Screenshot tool" "yes" "no"
-
-# Hypridle
-run_command "yay -S --sudoloop --noconfirm hypridle" "Install Hypridle for idle management" "yes" "no"
-
-# Starship Prompt
-run_command "yay -S --sudoloop --noconfirm starship" "Install Starship - Prompt" "yes" "no"
-
+# Starship config
 STARSHIP_SRC="$REPO_DIR/configs/starship/starship.toml"
 STARSHIP_DEST="$CONFIG_DIR/starship.toml"
 
 if [ -f "$STARSHIP_SRC" ]; then
-    run_command "cp \"$STARSHIP_SRC\" \"$STARSHIP_DEST\"" "Copy Starship config to $CONFIG_DIR" "yes" "no"
-    run_command "chown $USER_NAME:$USER_NAME \"$STARSHIP_DEST\"" "Fix ownership for starship.toml" "no" "yes"
-else
-    print_warning "Starship config file not found: $STARSHIP_SRC"
+    cp "$STARSHIP_SRC" "$STARSHIP_DEST"
+    chown "$USER_NAME:$USER_NAME" "$STARSHIP_DEST"
 fi
 
 add_starship_to_shell() {
     local shell_rc="$1"
     local shell_name="$2"
     local shell_rc_path="$USER_HOME/$shell_rc"
-    local starship_line='eval "$(starship init '"$shell_name"')"' 
+    local starship_line='eval "$(starship init '"$shell_name"')"'
 
-    if [ -f "$shell_rc_path" ]; then
-        if ! grep -qF "$starship_line" "$shell_rc_path"; then
-            echo -e "\n$starship_line" >> "$shell_rc_path"
-            run_command "chown $USER_NAME:$USER_NAME \"$shell_rc_path\"" "Fix ownership for $shell_rc" "no" "yes"
-            print_info "Added Starship init to $shell_rc"
-        fi
+    if [ -f "$shell_rc_path" ] && ! grep -qF "$starship_line" "$shell_rc_path"; then
+        echo -e "\n$starship_line" >> "$shell_rc_path"
+        chown "$USER_NAME:$USER_NAME" "$shell_rc_path"
     fi
 }
 
 add_starship_to_shell ".bashrc" "bash"
 add_starship_to_shell ".zshrc" "zsh"
 
-# Install Papirus icon theme
-run_command "pacman -S --noconfirm papirus-icon-theme" "Install Papirus Icon Theme" "yes" "yes"
+# Papirus icons and folder coloring
+run_command "pacman -S --noconfirm papirus-icon-theme" "Install Papirus Icon Theme" "yes"
 
-# Install papirus-folders if missing
 if ! command -v papirus-folders &>/dev/null; then
     TMP_DIR=$(mktemp -d)
-    run_command "git clone https://github.com/PapirusDevelopmentTeam/papirus-folders.git \"$TMP_DIR\"" "Clone papirus-folders"
-    run_command "install -Dm755 \"$TMP_DIR/papirus-folders\" /usr/local/bin/papirus-folders" "Install papirus-folders binary"
+    git clone https://github.com/PapirusDevelopmentTeam/papirus-folders.git "$TMP_DIR"
+    install -Dm755 "$TMP_DIR/papirus-folders" /usr/local/bin/papirus-folders
     rm -rf "$TMP_DIR"
 fi
 
-# Set folder color to grey (run under user's DBus session)
-run_command "sudo -u $USER_NAME dbus-launch papirus-folders -C grey --theme Papirus-Dark" "Set Papirus folder color to grey" "yes" "no"
+sudo -u "$USER_NAME" dbus-launch papirus-folders -C grey --theme Papirus-Dark
 
-# GTK config
+# GTK theming
 GTK3_CONFIG_DIR="$USER_HOME/.config/gtk-3.0"
 GTK4_CONFIG_DIR="$USER_HOME/.config/gtk-4.0"
-run_command "mkdir -p \"$GTK3_CONFIG_DIR\" \"$GTK4_CONFIG_DIR\"" "Ensure GTK config dirs exist" "no" "no"
+
+mkdir -p "$GTK3_CONFIG_DIR" "$GTK4_CONFIG_DIR"
 
 GTK_SETTINGS_CONTENT="[Settings]
 gtk-theme-name=FlatColor
 gtk-icon-theme-name=Papirus-Dark
 gtk-font-name=JetBrainsMono 10"
 
-echo "$GTK_SETTINGS_CONTENT" | sudo -u $USER_NAME tee "$GTK3_CONFIG_DIR/settings.ini" "$GTK4_CONFIG_DIR/settings.ini" > /dev/null
-run_command "chown -R $USER_NAME:$USER_NAME \"$GTK3_CONFIG_DIR\" \"$GTK4_CONFIG_DIR\"" "Fix ownership for GTK settings" "no" "yes"
+echo "$GTK_SETTINGS_CONTENT" | sudo -u "$USER_NAME" tee "$GTK3_CONFIG_DIR/settings.ini" "$GTK4_CONFIG_DIR/settings.ini" >/dev/null
+chown -R "$USER_NAME:$USER_NAME" "$GTK3_CONFIG_DIR" "$GTK4_CONFIG_DIR"
 
-# Set icon theme using gsettings with dbus
-run_command "sudo -u $USER_NAME dbus-launch gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'" "Apply Papirus-Dark using gsettings" "yes" "no"
+sudo -u "$USER_NAME" dbus-launch gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'
 
-# SDDM Theme
+# SDDM theming
 MONO_SDDM_REPO="https://github.com/pwyde/monochrome-kde.git"
 MONO_SDDM_TEMP="/tmp/monochrome-kde"
 MONO_THEME_NAME="monochrome"
 
-run_command "git clone --depth=1 \"$MONO_SDDM_REPO\" \"$MONO_SDDM_TEMP\"" "Clone monochrome KDE repo"
-run_command "sudo cp -r \"$MONO_SDDM_TEMP/sddm/themes/$MONO_THEME_NAME\" \"/usr/share/sddm/themes/$MONO_THEME_NAME\"" "Copy monochrome SDDM theme"
-run_command "sudo chown -R root:root \"/usr/share/sddm/themes/$MONO_THEME_NAME\"" "Set ownership for monochrome theme"
-run_command "sudo mkdir -p /etc/sddm.conf.d" "Ensure SDDM config directory exists"
-run_command "sudo bash -c 'echo -e \"[Theme]\\nCurrent=$MONO_THEME_NAME\" > /etc/sddm.conf.d/10-theme.conf'" "Apply SDDM theme"
-run_command "rm -rf \"$MONO_SDDM_TEMP\"" "Cleanup cloned repo"
+git clone --depth=1 "$MONO_SDDM_REPO" "$MONO_SDDM_TEMP"
+cp -r "$MONO_SDDM_TEMP/sddm/themes/$MONO_THEME_NAME" "/usr/share/sddm/themes/$MONO_THEME_NAME"
+chown -R root:root "/usr/share/sddm/themes/$MONO_THEME_NAME"
+mkdir -p /etc/sddm.conf.d
+echo -e "[Theme]\nCurrent=$MONO_THEME_NAME" > /etc/sddm.conf.d/10-theme.conf
+rm -rf "$MONO_SDDM_TEMP"
 
-# ----
-# Setup Thunar custom action for kitty terminal
+# Thunar Kitty custom action
 setup_thunar_kitty_action() {
   local uca_dir="$CONFIG_DIR/Thunar"
   local uca_file="$uca_dir/uca.xml"
 
   mkdir -p "$uca_dir"
+  chown "$USER_NAME:$USER_NAME" "$uca_dir"
   chmod 700 "$uca_dir"
 
   local kitty_action_xml='
-<action>
-  <icon>utilities-terminal</icon>
-  <name>Open Kitty Here</name>
-  <command>kitty --directory=%d</command>
-  <description>Open kitty terminal in the current folder</description>
-  <patterns>*</patterns>
-  <directories_only>true</directories_only>
-  <startup_notify>true</startup_notify>
-</action>
-'
+  <action>
+    <icon>utilities-terminal</icon>
+    <name>Open Kitty Here</name>
+    <command>kitty --directory=%d</command>
+    <description>Open kitty terminal in the current folder</description>
+    <patterns>*</patterns>
+    <directories_only>true</directories_only>
+    <startup_notify>true</startup_notify>
+  </action>'
 
   if [ ! -f "$uca_file" ]; then
     cat > "$uca_file" << EOF
@@ -181,17 +149,13 @@ setup_thunar_kitty_action() {
 $kitty_action_xml
 </actions>
 EOF
-    chown "$USER_NAME":"$USER_NAME" "$uca_file"
-    print_success "Created Thunar custom actions file with kitty terminal action."
+    chown "$USER_NAME:$USER_NAME" "$uca_file"
   else
-    if grep -q "<name>Open Kitty Here</name>" "$uca_file"; then
-      print_info "Thunar custom action for kitty already present."
-    else
+    if ! grep -q "<name>Open Kitty Here</name>" "$uca_file"; then
       sed -i "/<\/actions>/ i\\
 $kitty_action_xml
 " "$uca_file"
-      chown "$USER_NAME":"$USER_NAME" "$uca_file"
-      print_success "Added Thunar custom action to open kitty."
+      chown "$USER_NAME:$USER_NAME" "$uca_file"
     fi
   fi
 }
