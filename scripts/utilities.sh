@@ -6,7 +6,7 @@ source "$SCRIPT_DIR/helper.sh"
 log_message "Installation started for utilities section"
 print_info "\nStarting utilities setup..."
 
-# Detect the user running sudo
+# Detect the user running sudo (or fallback to current user)
 USER_NAME="${SUDO_USER:-$USER}"
 USER_HOME=$(eval echo "~$USER_NAME")
 
@@ -160,18 +160,19 @@ setup_thunar_kitty_action() {
   local uca_file="$uca_dir/uca.xml"
 
   mkdir -p "$uca_dir"
+  chmod 700 "$uca_dir"
 
   local kitty_action_xml='
-  <action>
-    <icon>utilities-terminal</icon>
-    <name>Open Kitty Here</name>
-    <command>kitty --directory=%f</command>
-    <description>Open kitty terminal in the current folder</description>
-    <patterns>*</patterns>
-    <directories_only>true</directories_only>
-    <startup_notify>true</startup_notify>
-  </action>
-  '
+<action>
+  <icon>utilities-terminal</icon>
+  <name>Open Kitty Here</name>
+  <command>kitty --directory=%d</command>
+  <description>Open kitty terminal in the current folder</description>
+  <patterns>*</patterns>
+  <directories_only>true</directories_only>
+  <startup_notify>true</startup_notify>
+</action>
+'
 
   if [ ! -f "$uca_file" ]; then
     cat > "$uca_file" << EOF
@@ -186,7 +187,6 @@ EOF
     if grep -q "<name>Open Kitty Here</name>" "$uca_file"; then
       print_info "Thunar custom action for kitty already present."
     else
-      # Insert before closing </actions> tag cleanly:
       sed -i "/<\/actions>/ i\\
 $kitty_action_xml
 " "$uca_file"
